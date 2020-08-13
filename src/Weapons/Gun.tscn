@@ -1,0 +1,26 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://assets/Sprites/Weapons/gun_1.png" type="Texture" id=1]
+[ext_resource path="res://src/Weapons/Bullet.tscn" type="PackedScene" id=2]
+[ext_resource path="res://src/Weapons/Gun.gd" type="Script" id=3]
+
+[node name="Gun" type="Sprite"]
+texture = ExtResource( 1 )
+script = ExtResource( 3 )
+
+[node name="Bullet" parent="." instance=ExtResource( 2 )]
+position = Vector2( -304, -48 )
+
+[node name="Position2DMuzzle" type="Position2D" parent="."]
+position = Vector2( 288, -80 )
+
+[node name="FireRateTimer" type="Timer" parent="."]
+wait_time = 0.06
+one_shot = true
+
+[node name="ReloadTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="Position2DGrip" type="Position2D" parent="."]
+position = Vector2( -240, -64 )
+[connection signal="timeout" from="ReloadTimer" to="." method="_on_ReloadTimer_timeout"]

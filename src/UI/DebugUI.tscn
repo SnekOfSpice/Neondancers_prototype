@@ -1,0 +1,92 @@
+[gd_scene format=2]
+
+[node name="DebugUI" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="IsExhaustedBar" type="ProgressBar" parent="."]
+margin_left = -560.0
+margin_top = -320.0
+margin_right = -416.0
+margin_bottom = -304.0
+max_value = 2.5
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="StaminaBar" type="ProgressBar" parent="."]
+margin_left = -560.0
+margin_top = -304.0
+margin_right = -272.0
+margin_bottom = -274.0
+
+[node name="LabelCurrentStamina" type="Label" parent="."]
+margin_left = -528.0
+margin_top = -240.0
+margin_right = -450.0
+margin_bottom = -209.0
+text = "stamina: %s
+"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelIsExhausted" type="Label" parent="."]
+margin_left = -528.0
+margin_top = -224.0
+margin_right = -418.0
+margin_bottom = -193.0
+text = "is_exhausted: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelExhaustedTimeLeft" type="Label" parent="."]
+margin_left = -528.0
+margin_top = -208.0
+margin_right = -372.0
+margin_bottom = -177.0
+text = "exhausted_time_left: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelFPS" type="Label" parent="."]
+margin_left = 496.0
+margin_top = -304.0
+margin_right = 545.0
+margin_bottom = -290.0
+text = "FPS: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Camera2D" type="Camera2D" parent="."]
+smoothing_speed = 14.0
+
+[node name="LabelCurrentMagazine" type="Label" parent="."]
+margin_left = -192.0
+margin_top = -240.0
+margin_right = -152.0
+margin_bottom = -226.0
+text = "current_magazine: %s"
+
+[node name="LabelIsReloading" type="Label" parent="."]
+margin_left = -192.0
+margin_top = -224.0
+margin_right = -152.0
+margin_bottom = -210.0
+text = "is_reloading: %s"
+
+[node name="LabelReloadTimeLeft" type="Label" parent="."]
+margin_left = -192.0
+margin_top = -208.0
+margin_right = -62.0
+margin_bottom = -194.0
+text = "reload_time_left: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
