@@ -8,7 +8,7 @@ var motion = Vector2.ZERO
 export var walk_speed = 500
 export var acceleration = 50
 export var gravity = 10
-export var jump_impulse = 30
+export var jump_impulse = 750
 
 export var dash_range_factor = 10000
 
@@ -37,16 +37,13 @@ func _ready() -> void:
 	$DebugUI/IsExhaustedBar.max_value = $IsExhaustedTimer.wait_time
 	$GunRotating.visible = false
 
+# STATE MACHINE
+#func _input(event: InputEvent) -> void:
+
 func _physics_process(delta: float) -> void:
 	# apply gravity
-	if motion.y < 250:
-		motion.y += gravity * 2
-	elif motion.y < 500:
-		motion.y += gravity * 1.5
-	elif motion.y > 2000:
-		motion.y = 2000
-	else:
-		motion.y += gravity
+	# faster acceleration at start of fall with upper limit
+	apply_gravity()
 
 	if current_stamina < max_stamina && !is_exhausted:
 		current_stamina += stamina_regen
@@ -58,7 +55,6 @@ func _physics_process(delta: float) -> void:
 	
 	
 	if (right_stick_input()
-		&& $DashOnCooldownTimer.time_left == 0
 		&& !Input.is_action_pressed("left_trigger")
 		):
 		#Input.is_action_just_pressed("dash_debug"))):
@@ -68,7 +64,7 @@ func _physics_process(delta: float) -> void:
 			input_vector.y = Input.get_action_strength("right_stick_down") - Input.get_action_strength("right_stick_up")
 			input_vector = input_vector.normalized()
 			AutoLoad.right_stick_input_vector2 = input_vector
-			dash(input_vector)
+			dash()
 	elif (is_aiming()):
 		$GunRotating.visible = false
 		var input_vector = Vector2.ZERO
@@ -95,10 +91,10 @@ func _physics_process(delta: float) -> void:
 		$AnimatedSprite.play("Run")
 		motion.x = walk_speed
 		flip_idle = false
-	elif Input.is_action_pressed("jump") && is_on_floor():
-		$GunRotating.visible = false
-		motion.y = jump_impulse
-		motion = move_and_slide(motion, Vector2.UP)
+	#elif Input.is_action_pressed("a_button") && is_on_floor():
+	#	$GunRotating.visible = false
+	#	motion.y = -jump_impulse
+	#	motion = move_and_slide(motion, Vector2.UP)
 	else:
 		$GunRotating.visible = false
 		motion.x = 0
@@ -133,6 +129,9 @@ func _physics_process(delta: float) -> void:
 			if (current_stamina < aim_cost_per_frame):
 				make_exhausted()
 	
+	if Input.is_action_just_pressed("a_button") && is_on_floor():
+		motion.y = -jump_impulse
+	
 	motion = move_and_slide(motion, Vector2.UP)
 	
 	if is_on_floor():
@@ -164,6 +163,91 @@ func _process(delta: float) -> void:
 		$Camera2D.set_global_position(lerp(get_global_position(), get_global_position(),delta*gun_ads_speed))
 	
 	# set all the DebugUI info
+	update_debug_ui()
+	
+
+func dash() -> void:
+	if current_stamina < dash_cost:
+		make_exhausted()
+	else:
+		#print_debug("dashing")
+		var move = AutoLoad.right_stick_input_vector2
+		current_stamina -= dash_cost
+		$DashTimer.start()
+		#motion *= dash_range_factor
+		$AnimatedSprite.play("Dash")
+	
+		# will be obsolete bc dash will be one swoosh effect
+		#if motion.x > 0:
+		#	$AnimatedSprite.flip_h = false
+		#else:
+		#	$AnimatedSprite.flip_h = true
+	
+		# rotate the dash anim to the direction of the dash
+		$AnimatedSprite.rotation = move.angle()
+	
+		#var move = input_vector * dash_range_factor
+		
+		# boosts the dash if it is less than 90 degrees apart from itself, mirrored on a Vector2.UP
+		# or is just straight up and can't be mirrored I think?
+		# 180° = -1, 90° = 0, 0° = 1
+		# https://docs.godotengine.org/en/stable/tutorials/math/vector_math.html
+		if (move.y < 0 && (move.dot(move.bounce(Vector2.UP)) > 0)) || move == Vector2.UP:
+			print("dash enhanced")
+			move.y *= 1.25
+		move *= dash_range_factor
+		motion = move_and_slide(move)
+		# remove inertia from dashing to remain pin-point
+		motion = Vector2.ZERO
+	
+
+func out_of_stamina() -> bool:
+	return current_stamina <= 0
+
+func _on_DashTimer_timeout() -> void:
+	motion.x = walk_speed
+
+func make_exhausted() -> void:
+	is_exhausted = true
+	if !$IsExhaustedTimer.time_left > 0:
+		$IsExhaustedTimer.start()
+
+func _on_IsExhaustedTimer_timeout() -> void:
+	is_exhausted = false
+
+
+func _on_DebugTimer_timeout() -> void:
+	#print_debug("current_stamina: ", current_stamina)
+	#print_debug("is_exhausted: ", is_exhausted)
+	#print_debug("exhausted time left: ", $IsExhaustedTimer.time_left)
+	$DebugTimer.start()
+
+func right_stick_input() -> bool:
+	return (Input.is_action_just_pressed("right_stick_down") || Input.is_action_just_pressed("right_stick_left") || Input.is_action_just_pressed("right_stick_right") || Input.is_action_just_pressed("right_stick_up"))
+
+func is_aiming() -> bool:
+	return right_stick_input() && Input.is_action_pressed("left_trigger")
+
+
+
+
+
+
+func apply_gravity() -> void:
+	if motion.y < 100:
+		motion.y += gravity * 5
+	elif motion.y < 250:
+		motion.y += gravity * 2
+	elif motion.y < 500:
+		motion.y += gravity * 1.5
+	elif motion.y > 2000:
+		motion.y = 2000
+	else:
+		motion.y += gravity
+
+
+
+func update_debug_ui() -> void:
 	$DebugUI.get_node("LabelCurrentStamina").text = "current_stamina: %s" % current_stamina
 	$DebugUI.get_node("LabelIsExhausted").text = "is_exhausted: %s" % is_exhausted
 	$DebugUI.get_node("LabelExhaustedTimeLeft").text = "IsExhaustedTimer.time_left: %s" % $IsExhaustedTimer.time_left
@@ -185,56 +269,3 @@ func _process(delta: float) -> void:
 	$DebugUI.get_node("LabelMuzzlePosition").text = "AutoLoad.muzzle_position: %s" % AutoLoad.muzzle_position
 	
 	$DebugUI/LabelMotion.text = "Motion: %s" % motion
-
-func dash(input_vector: Vector2) -> void:
-	if current_stamina < dash_cost:
-		print_debug("too low stamina to dash")
-	else:
-		print_debug("dashing")
-		current_stamina -= dash_cost
-		$DashTimer.start()
-		#motion *= dash_range_factor
-		$AnimatedSprite.play("Dash")
-	
-		# will be obsolete bc dash will be one swoosh effect
-		#if motion.x > 0:
-		#	$AnimatedSprite.flip_h = false
-		#else:
-		#	$AnimatedSprite.flip_h = true
-	
-		# rotate the dash anim to the direction of the dash
-		$AnimatedSprite.rotation = input_vector.angle()
-	
-		var move = input_vector * dash_range_factor
-		motion = move_and_slide(move)
-		# remove inertia from dashing to remain pin-point
-		motion = Vector2.ZERO
-	
-
-func out_of_stamina() -> bool:
-	return current_stamina <= 0
-
-func _on_DashTimer_timeout() -> void:
-	motion.x = walk_speed
-	$DashOnCooldownTimer.start()
-
-func make_exhausted() -> void:
-	is_exhausted = true
-	$IsExhaustedTimer.start()
-
-func _on_IsExhaustedTimer_timeout() -> void:
-	is_exhausted = false
-
-
-func _on_DebugTimer_timeout() -> void:
-	print_debug("current_stamina: ", current_stamina)
-	print_debug("is_exhausted: ", is_exhausted)
-	print_debug("exhausted time left: ", $IsExhaustedTimer.time_left)
-	$DebugTimer.start()
-
-func right_stick_input() -> bool:
-	return (Input.is_action_just_pressed("right_stick_down") || Input.is_action_just_pressed("right_stick_left") || Input.is_action_just_pressed("right_stick_right") || Input.is_action_just_pressed("right_stick_up"))
-
-func is_aiming() -> bool:
-	return right_stick_input() && Input.is_action_pressed("left_trigger")
-	

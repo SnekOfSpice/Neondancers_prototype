@@ -8,7 +8,6 @@ var is_reloading = false setget set_is_reloading, get_is_reloading
 onready var fire_rate_timer = $FireRateTimer
 
 func _ready() -> void:
-	$Bullet.visible = false
 	current_magazine = magazine_size
 
 func _process(delta: float) -> void:

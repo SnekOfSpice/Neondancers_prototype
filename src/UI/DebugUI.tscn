@@ -37,7 +37,7 @@ __meta__ = {
 [node name="LabelIsExhausted" type="Label" parent="."]
 margin_left = -528.0
 margin_top = -224.0
-margin_right = -418.0
+margin_right = -450.0
 margin_bottom = -193.0
 text = "is_exhausted: %s"
 __meta__ = {
@@ -47,9 +47,9 @@ __meta__ = {
 [node name="LabelExhaustedTimeLeft" type="Label" parent="."]
 margin_left = -528.0
 margin_top = -208.0
-margin_right = -372.0
+margin_right = -450.0
 margin_bottom = -177.0
-text = "exhausted_time_left: %s"
+text = "IsExhaustedTimer.time_left: %s"
 __meta__ = {
 "_edit_use_anchors_": false
 }

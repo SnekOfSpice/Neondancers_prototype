@@ -4,6 +4,8 @@ export onready var bullet_speed = 1000 setget set_bullet_speed, get_bullet_speed
 var bullet_speed_vector setget set_bullet_speed_vector
 var bullet_direction setget set_bullet_direction
 
+var damage = 10
+
 func _ready() -> void:
 	bullet_speed_vector = Vector2(bullet_speed, bullet_speed)
 	bullet_direction = AutoLoad.right_stick_input_vector2
@@ -33,5 +35,8 @@ func set_bullet_direction(value: Vector2) -> void:
 
 
 func _on_Bullet_body_entered(body: Node) -> void:
+	if body.get_collision_layer_bit(2):
+		body.hit_points -= damage
+		self.queue_free()
 	if body is TileMap:
 		self.queue_free()
