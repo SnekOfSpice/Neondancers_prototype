@@ -22,14 +22,14 @@ animations = [ {
 "name": "Run",
 "speed": 10.0
 }, {
-"frames": [ ExtResource( 6 ) ],
-"loop": true,
-"name": "Idle",
-"speed": 5.0
-}, {
 "frames": [ ExtResource( 8 ) ],
 "loop": true,
 "name": "Dash",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 6 ) ],
+"loop": true,
+"name": "Idle",
 "speed": 5.0
 } ]
 
@@ -107,12 +107,15 @@ one_shot = true
 wait_time = 0.2
 autostart = true
 
-[node name="Position2D" type="Position2D" parent="."]
+[node name="Position2DGunMuzzle" type="Position2D" parent="."]
 position = Vector2( 102, -62 )
 
 [node name="GunRotating" parent="." instance=ExtResource( 14 )]
-position = Vector2( 32.136, -48.1624 )
+position = Vector2( 80, -56 )
 scale = Vector2( 0.072, 0.072 )
+
+[node name="Position2DGunOrigin" type="Position2D" parent="."]
+position = Vector2( 31.75, -47.75 )
 [connection signal="timeout" from="DashTimer" to="." method="_on_DashTimer_timeout"]
 [connection signal="timeout" from="IsExhaustedTimer" to="." method="_on_IsExhaustedTimer_timeout"]
 [connection signal="timeout" from="DebugTimer" to="." method="_on_DebugTimer_timeout"]

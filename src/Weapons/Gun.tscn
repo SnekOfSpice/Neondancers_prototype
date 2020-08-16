@@ -9,6 +9,7 @@ texture = ExtResource( 1 )
 script = ExtResource( 3 )
 
 [node name="Bullet" parent="." instance=ExtResource( 2 )]
+visible = false
 position = Vector2( -304, -48 )
 
 [node name="Position2DMuzzle" type="Position2D" parent="."]

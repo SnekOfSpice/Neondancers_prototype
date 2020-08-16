@@ -1,5 +1,7 @@
 extends KinematicBody2D
 
+signal gun_spawned
+
 
 # movement
 var motion = Vector2.ZERO
@@ -8,7 +10,7 @@ export var acceleration = 50
 export var gravity = 10
 export var jump_impulse = 30
 
-export var dash_range_factor = 8000
+export var dash_range_factor = 10000
 
 # stamina
 export var max_stamina = 100.0
@@ -20,79 +22,116 @@ export var aim_cost_per_frame = 0.8
 var is_exhausted = false
 
 # gun
-onready var gun_position_x = $Gun.position.x
-onready var gun_position_y =  $Gun.position.y
-var gun_flipped_left = false setget set_gun_flipped_left, get_gun_flipped_left
+onready var gun_position_x = $GunRotating.position.x
+onready var gun_position_y =  $GunRotating.position.y
+
+export var gun_ads_speed = 7500.0
 
 # animation and perspective
 var flip_idle = true
-onready var right_stick_input_vector2 = Vector2.ZERO setget set_right_stick_input_vector2, get_right_stick_input_vector2
+#onready var right_stick_input_vector2 = Vector2.ZERO setget set_right_stick_input_vector2, get_right_stick_input_vector2
 
 
 func _ready() -> void:
 	$AnimatedSprite.play("Idle")
 	$DebugUI/IsExhaustedBar.max_value = $IsExhaustedTimer.wait_time
+	$GunRotating.visible = false
 
 func _physics_process(delta: float) -> void:
-	motion.y += gravity
+	# apply gravity
+	if motion.y < 250:
+		motion.y += gravity * 2
+	elif motion.y < 500:
+		motion.y += gravity * 1.5
+	elif motion.y > 2000:
+		motion.y = 2000
+	else:
+		motion.y += gravity
+
 	if current_stamina < max_stamina && !is_exhausted:
 		current_stamina += stamina_regen
 	if current_stamina > max_stamina:
 		current_stamina = max_stamina
+	
 	if $DashTimer.time_left > 0:
 		$AnimatedSprite.play("Dash")
-	if ((
-		Input.is_action_just_pressed("right_stick_down") ||
-		Input.is_action_just_pressed("right_stick_left") ||
-		Input.is_action_just_pressed("right_stick_right") ||
-		Input.is_action_just_pressed("right_stick_up"))
+	
+	
+	if (right_stick_input()
 		&& $DashOnCooldownTimer.time_left == 0
+		&& !Input.is_action_pressed("left_trigger")
 		):
 		#Input.is_action_just_pressed("dash_debug"))):
+			$GunRotating.visible = false
 			var input_vector = Vector2.ZERO
 			input_vector.x = Input.get_action_strength("right_stick_right") - Input.get_action_strength("right_stick_left")
 			input_vector.y = Input.get_action_strength("right_stick_down") - Input.get_action_strength("right_stick_up")
 			input_vector = input_vector.normalized()
-			right_stick_input_vector2 = input_vector
+			AutoLoad.right_stick_input_vector2 = input_vector
 			dash(input_vector)
+	elif (is_aiming()):
+		$GunRotating.visible = false
+		var input_vector = Vector2.ZERO
+		input_vector.x = Input.get_action_strength("right_stick_right") - Input.get_action_strength("right_stick_left")
+		input_vector.y = Input.get_action_strength("right_stick_down") - Input.get_action_strength("right_stick_up")
+		input_vector = input_vector.normalized()
+		AutoLoad.right_stick_input_vector2 = input_vector
 	elif Input.is_action_pressed("move_left"):
-		$Gun.flip_h = true
+		$GunRotating.visible = false
+		#$Gun.flip_h = true
 		# + 55 is cosmetic offset
-		$Gun.position = Vector2(-gun_position_x + 55, gun_position_y)
-		gun_flipped_left = true
+		#$Gun.position = Vector2(-gun_position_x + 55, gun_position_y)
+		$GunRotating.position = Vector2(-gun_position_x * AutoLoad.right_stick_input_vector2.x, gun_position_y)
 		$AnimatedSprite.flip_h = true
 		$AnimatedSprite.play("Run")
 		motion.x = -walk_speed
 		flip_idle = true
 	elif Input.is_action_pressed("move_right"):
-		$Gun.flip_h = false
-		$Gun.position = Vector2(gun_position_x, gun_position_y)
-		gun_flipped_left = false
+		$GunRotating.visible = false
+		#$Gun.flip_h = false
+		#$Gun.position = Vector2(gun_position_x, gun_position_y)
+		$GunRotating.position = Vector2(gun_position_x, gun_position_y)
 		$AnimatedSprite.flip_h = false
 		$AnimatedSprite.play("Run")
 		motion.x = walk_speed
 		flip_idle = false
 	elif Input.is_action_pressed("jump") && is_on_floor():
+		$GunRotating.visible = false
 		motion.y = jump_impulse
 		motion = move_and_slide(motion, Vector2.UP)
 	else:
+		$GunRotating.visible = false
 		motion.x = 0
 		if flip_idle:
 			$AnimatedSprite.flip_h = true
 		else:
+			$GunRotating.visible = false
 			$AnimatedSprite.flip_h = false
 		$AnimatedSprite.play("Idle")
 	if motion.x > (walk_speed * dash_range_factor) / 2:
 		$AnimatedSprite.play("dash")
 	
 	if Input.is_action_pressed("left_trigger") && !(current_stamina < aim_cost_per_frame) && !is_exhausted:
+		# && !is_on_floor() aming always takes stamina? -> playtest
+		$GunRotating.visible = true
+		if Input.is_action_just_pressed("left_trigger"):
+			$GunRotating.get_node("Particles2DSpawn").restart()
+		#$GunRotating.get_node("SpawnTimer").start()
+		
+		if Input.is_action_just_pressed("left_trigger"):
+			#$GunRotating.play("default")
+			if motion.x > 0:
+				AutoLoad.set_right_stick_input_vector2(Vector2(1,0))
+			elif motion.y < 0:
+				AutoLoad.set_right_stick_input_vector2(Vector2(-1,0))
 		$AnimatedSprite.rotation = 0
 		$AnimatedSprite.speed_scale = 0.5
 		motion.x /= 5
 		motion.y /= 3
-		current_stamina -= aim_cost_per_frame
-		if (current_stamina < aim_cost_per_frame):
-			make_exhausted()
+		if !is_on_floor():
+			current_stamina -= aim_cost_per_frame
+			if (current_stamina < aim_cost_per_frame):
+				make_exhausted()
 	
 	motion = move_and_slide(motion, Vector2.UP)
 	
@@ -113,6 +152,17 @@ func _physics_process(delta: float) -> void:
 	#	$AnimationPlayer.play("rotate_up")
 
 func _process(delta: float) -> void:
+	
+	# https://godotengine.org/qa/62408/make-the-camera-look-at-an-object
+	if Input.is_action_pressed("left_trigger"):
+		#$Camera2D.offset = AutoLoad.right_stick_input_vector2 * 200
+		$Camera2D.set_global_position(lerp(get_global_position(), get_global_position() + (AutoLoad.right_stick_input_vector2.normalized()), delta*gun_ads_speed))
+	elif Input.is_action_just_released("left_trigger"):
+		#$Camera2D.offset = Vector2.ZERO
+		$Camera2D.set_global_position(lerp(get_global_position(), get_global_position() - (AutoLoad.right_stick_input_vector2.normalized()), delta*gun_ads_speed))
+	else:
+		$Camera2D.set_global_position(lerp(get_global_position(), get_global_position(),delta*gun_ads_speed))
+	
 	# set all the DebugUI info
 	$DebugUI.get_node("LabelCurrentStamina").text = "current_stamina: %s" % current_stamina
 	$DebugUI.get_node("LabelIsExhausted").text = "is_exhausted: %s" % is_exhausted
@@ -126,12 +176,15 @@ func _process(delta: float) -> void:
 	else:
 		$DebugUI.get_node("IsExhaustedBar").visible = false
 	
-	$DebugUI.get_node("LabelCurrentMagazine").text = "current_magazine: %s" % $Gun.get_current_magazine()
-	$DebugUI.get_node("LabelIsReloading").text = "is_reloading: %s" % $Gun.get_is_reloading()
-	$DebugUI.get_node("LabelReloadTimeLeft").text = "reload_time_left: %s" % $Gun.get_node("ReloadTimer").time_left
-	# is reliading
-	# reloadtime elft
-	#$DebugUI.get_node("LabelIsReloading").text = 
+	$DebugUI.get_node("LabelCurrentMagazine").text = "current_magazine: %s" % $GunRotating.get_current_magazine()
+	$DebugUI.get_node("LabelIsReloading").text = "is_reloading: %s" % $GunRotating.get_is_reloading()
+	$DebugUI.get_node("LabelReloadTimeLeft").text = "ReloadTimer.time_left: %s" % $GunRotating.get_node("ReloadTimer").time_left
+	
+	$DebugUI.get_node("LabelRightStickInput").text = "AutoLoad.right_stick_input_vector2: %s" % AutoLoad.right_stick_input_vector2
+	$DebugUI.get_node("LabelGunRotatingVisible").text = "GunRotating.visible: %s" % $GunRotating.visible
+	$DebugUI.get_node("LabelMuzzlePosition").text = "AutoLoad.muzzle_position: %s" % AutoLoad.muzzle_position
+	
+	$DebugUI/LabelMotion.text = "Motion: %s" % motion
 
 func dash(input_vector: Vector2) -> void:
 	if current_stamina < dash_cost:
@@ -179,14 +232,9 @@ func _on_DebugTimer_timeout() -> void:
 	print_debug("exhausted time left: ", $IsExhaustedTimer.time_left)
 	$DebugTimer.start()
 
-func set_gun_flipped_left(value: bool) -> void:
-	gun_flipped_left = value
+func right_stick_input() -> bool:
+	return (Input.is_action_just_pressed("right_stick_down") || Input.is_action_just_pressed("right_stick_left") || Input.is_action_just_pressed("right_stick_right") || Input.is_action_just_pressed("right_stick_up"))
 
-func get_gun_flipped_left() -> bool:
-	return gun_flipped_left
-
-func set_right_stick_input_vector2(value: Vector2) -> void:
-	right_stick_input_vector2 = value
-
-func get_right_stick_input_vector2() -> Vector2:
-	return right_stick_input_vector2
+func is_aiming() -> bool:
+	return right_stick_input() && Input.is_action_pressed("left_trigger")
+	

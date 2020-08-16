@@ -14,7 +14,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if Input.is_action_pressed("right_trigger") && fire_rate_timer.time_left == 0 && !is_reloading:
 		if current_magazine > 0:
-			shoot()
+			#shoot()
 			fire_rate_timer.start()
 		else:
 			reload()
@@ -26,13 +26,13 @@ func shoot() -> void:
 	get_parent().get_parent().add_child(bullet)
 	bullet.position = Vector2(get_parent().position.x + 102, get_parent().position.y -62)
 	# if the muzzle is left of the grip
-	if get_parent().get_gun_flipped_left():
-		# flip the bullet direction
-		bullet.set_bullet_speed(-bullet.get_bullet_speed())
-		bullet.position = Vector2(get_parent().position.x - 60, get_parent().position.y -62)
-		# flip_h didn't work
-		# scale it for visually same result
-		bullet.scale = Vector2(-1,1)
+#	if get_parent().get_gun_flipped_left():
+#		# flip the bullet direction
+#		bullet.set_bullet_speed(-bullet.get_bullet_speed())
+#		bullet.position = Vector2(get_parent().position.x - 60, get_parent().position.y -62)
+#		# flip_h didn't work
+#		# scale it for visually same result
+#		bullet.scale = Vector2(-1,1)
 	current_magazine -= 1
 
 func reload() -> void:

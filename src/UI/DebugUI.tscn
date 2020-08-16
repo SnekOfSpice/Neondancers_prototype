@@ -86,7 +86,44 @@ margin_left = -192.0
 margin_top = -208.0
 margin_right = -62.0
 margin_bottom = -194.0
-text = "reload_time_left: %s"
+text = "ReloadTimer.time_left: %s"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="LabelRightStickInput" type="Label" parent="."]
+margin_left = -528.0
+margin_top = -80.0
+margin_right = -279.0
+margin_bottom = -66.0
+text = "AutoLoad.right_stick_input_vector2: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelMuzzlePosition" type="Label" parent="."]
+margin_left = -528.0
+margin_top = -48.0
+margin_right = -279.0
+margin_bottom = -34.0
+text = "AutoLoad.muzzle_position: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelGunRotatingVisible" type="Label" parent="."]
+margin_left = -528.0
+margin_top = -64.0
+margin_right = -377.0
+margin_bottom = -50.0
+text = "GunRotating.visible: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelMotion" type="Label" parent="."]
+margin_left = -528.0
+margin_top = -144.0
+margin_right = -455.0
+margin_bottom = -130.0
+text = "motion: %s"

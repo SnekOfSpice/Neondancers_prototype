@@ -1,29 +1,87 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://assets/Sprites/Weapons/gun_1.png" type="Texture" id=1]
 [ext_resource path="res://src/Weapons/Bullet.tscn" type="PackedScene" id=2]
 [ext_resource path="res://src/Weapons/GunRotating.gd" type="Script" id=3]
 
-[node name="Sprite" type="Sprite"]
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 1 ) ],
+"loop": true,
+"name": "default",
+"speed": 5.0
+} ]
 
-[node name="GunRotating" type="Sprite" parent="."]
-position = Vector2( 1117.53, 26.9858 )
-texture = ExtResource( 1 )
+[sub_resource type="Animation" id=2]
+resource_name = "gun_spawn"
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:frames")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray(  ),
+"transitions": PoolRealArray(  ),
+"update": 1,
+"values": [  ]
+}
+
+[sub_resource type="Gradient" id=3]
+colors = PoolColorArray( 0.917969, 0.506328, 0.0681305, 1, 0.953125, 0.696693, 0.0893555, 0 )
+
+[sub_resource type="GradientTexture" id=4]
+gradient = SubResource( 3 )
+
+[sub_resource type="ParticlesMaterial" id=5]
+emission_shape = 2
+emission_box_extents = Vector3( 400, 300, 1 )
+flag_disable_z = true
+direction = Vector3( 0, -1, 0 )
+spread = 126.21
+gravity = Vector3( 0, 200, 0 )
+initial_velocity = -500.0
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+angle_random = 1.0
+scale = 100.0
+scale_random = 0.64
+color_ramp = SubResource( 4 )
+
+[node name="GunRotating" type="AnimatedSprite"]
+frames = SubResource( 1 )
 script = ExtResource( 3 )
 
-[node name="Bullet" parent="GunRotating" instance=ExtResource( 2 )]
+[node name="Bullet" parent="." instance=ExtResource( 2 )]
+visible = false
 position = Vector2( -304, -48 )
 
-[node name="Position2DMuzzle" type="Position2D" parent="GunRotating"]
-position = Vector2( 288, -80 )
+[node name="Position2DMuzzle" type="Position2D" parent="."]
+position = Vector2( 290, -72 )
 
-[node name="FireRateTimer" type="Timer" parent="GunRotating"]
+[node name="FireRateTimer" type="Timer" parent="."]
 wait_time = 0.06
 one_shot = true
 
-[node name="ReloadTimer" type="Timer" parent="GunRotating"]
+[node name="ReloadTimer" type="Timer" parent="."]
 one_shot = true
 
-[node name="Position2DGrip" type="Position2D" parent="GunRotating"]
+[node name="Position2DGrip" type="Position2D" parent="."]
 position = Vector2( -240, -64 )
-[connection signal="timeout" from="GunRotating/ReloadTimer" to="GunRotating" method="_on_ReloadTimer_timeout"]
+
+[node name="Sprite" type="Sprite" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/gun_spawn = SubResource( 2 )
+
+[node name="Particles2DSpawn" type="Particles2D" parent="."]
+emitting = false
+amount = 50
+lifetime = 0.2
+one_shot = true
+process_material = SubResource( 5 )
+
+[node name="SpawnTimer" type="Timer" parent="."]
+one_shot = true
+[connection signal="timeout" from="ReloadTimer" to="." method="_on_ReloadTimer_timeout"]
+[connection signal="timeout" from="SpawnTimer" to="." method="_on_SpawnTimer_timeout"]
