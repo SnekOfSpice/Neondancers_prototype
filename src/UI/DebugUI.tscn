@@ -7,27 +7,30 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="Camera2D" type="Camera2D" parent="."]
+smoothing_speed = 14.0
+
 [node name="IsExhaustedBar" type="ProgressBar" parent="."]
-margin_left = -560.0
-margin_top = -320.0
-margin_right = -416.0
-margin_bottom = -304.0
+margin_left = -496.0
+margin_top = -256.0
+margin_right = -352.0
+margin_bottom = -240.0
 max_value = 2.5
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="StaminaBar" type="ProgressBar" parent="."]
-margin_left = -560.0
-margin_top = -304.0
-margin_right = -272.0
-margin_bottom = -274.0
+margin_left = -496.0
+margin_top = -240.0
+margin_right = -208.0
+margin_bottom = -210.0
 
 [node name="LabelCurrentStamina" type="Label" parent="."]
-margin_left = -528.0
-margin_top = -240.0
-margin_right = -450.0
-margin_bottom = -209.0
+margin_left = -496.0
+margin_top = -192.0
+margin_right = -418.0
+margin_bottom = -161.0
 text = "stamina: %s
 "
 __meta__ = {
@@ -35,21 +38,88 @@ __meta__ = {
 }
 
 [node name="LabelIsExhausted" type="Label" parent="."]
-margin_left = -528.0
-margin_top = -224.0
-margin_right = -450.0
-margin_bottom = -193.0
+margin_left = -496.0
+margin_top = -176.0
+margin_right = -386.0
+margin_bottom = -145.0
 text = "is_exhausted: %s"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="LabelExhaustedTimeLeft" type="Label" parent="."]
-margin_left = -528.0
-margin_top = -208.0
-margin_right = -450.0
-margin_bottom = -177.0
+margin_left = -496.0
+margin_top = -160.0
+margin_right = -294.0
+margin_bottom = -129.0
 text = "IsExhaustedTimer.time_left: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelMotion" type="Label" parent="."]
+margin_left = -496.0
+margin_top = -128.0
+margin_right = -423.0
+margin_bottom = -114.0
+text = "motion: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelCurrentMagazine" type="Label" parent="."]
+margin_left = -160.0
+margin_top = -192.0
+margin_right = -20.0
+margin_bottom = -178.0
+text = "current_magazine: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelIsReloading" type="Label" parent="."]
+margin_left = -160.0
+margin_top = -176.0
+margin_right = -57.0
+margin_bottom = -162.0
+text = "is_reloading: %s"
+
+[node name="LabelReloadTimeLeft" type="Label" parent="."]
+margin_left = -160.0
+margin_top = -160.0
+margin_right = 8.0
+margin_bottom = -146.0
+text = "ReloadTimer.time_left: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelRightStickInput" type="Label" parent="."]
+margin_left = -496.0
+margin_top = -80.0
+margin_right = -247.0
+margin_bottom = -66.0
+text = "AutoLoad.right_stick_input_vector2: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelMuzzlePosition" type="Label" parent="."]
+margin_left = -496.0
+margin_top = -48.0
+margin_right = -247.0
+margin_bottom = -34.0
+text = "AutoLoad.muzzle_position: %s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelGunRotatingVisible" type="Label" parent="."]
+margin_left = -496.0
+margin_top = -64.0
+margin_right = -345.0
+margin_bottom = -50.0
+text = "GunRotating.visible: %s"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -63,67 +133,3 @@ text = "FPS: %s"
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="Camera2D" type="Camera2D" parent="."]
-smoothing_speed = 14.0
-
-[node name="LabelCurrentMagazine" type="Label" parent="."]
-margin_left = -192.0
-margin_top = -240.0
-margin_right = -152.0
-margin_bottom = -226.0
-text = "current_magazine: %s"
-
-[node name="LabelIsReloading" type="Label" parent="."]
-margin_left = -192.0
-margin_top = -224.0
-margin_right = -152.0
-margin_bottom = -210.0
-text = "is_reloading: %s"
-
-[node name="LabelReloadTimeLeft" type="Label" parent="."]
-margin_left = -192.0
-margin_top = -208.0
-margin_right = -62.0
-margin_bottom = -194.0
-text = "ReloadTimer.time_left: %s"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="LabelRightStickInput" type="Label" parent="."]
-margin_left = -528.0
-margin_top = -80.0
-margin_right = -279.0
-margin_bottom = -66.0
-text = "AutoLoad.right_stick_input_vector2: %s"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="LabelMuzzlePosition" type="Label" parent="."]
-margin_left = -528.0
-margin_top = -48.0
-margin_right = -279.0
-margin_bottom = -34.0
-text = "AutoLoad.muzzle_position: %s"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="LabelGunRotatingVisible" type="Label" parent="."]
-margin_left = -528.0
-margin_top = -64.0
-margin_right = -377.0
-margin_bottom = -50.0
-text = "GunRotating.visible: %s"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="LabelMotion" type="Label" parent="."]
-margin_left = -528.0
-margin_top = -144.0
-margin_right = -455.0
-margin_bottom = -130.0
-text = "motion: %s"

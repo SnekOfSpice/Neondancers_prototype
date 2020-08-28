@@ -10,7 +10,7 @@ export var acceleration = 50
 export var gravity = 10
 export var jump_impulse = 750
 
-export var dash_range_factor = 10000
+export var dash_range_factor = 15000
 
 # stamina
 export var max_stamina = 100.0
@@ -20,12 +20,17 @@ export var dash_cost = 17.5
 export var aim_cost_per_frame = 0.8
 
 var is_exhausted = false
+var is_attacking = false
 
 # gun
 onready var gun_position_x = $GunRotating.position.x
 onready var gun_position_y =  $GunRotating.position.y
 
 export var gun_ads_speed = 7500.0
+
+# melee
+# placeholder in this script for now, will need to create melee scene later
+var attack_damage = 200
 
 # animation and perspective
 var flip_idle = true
@@ -41,8 +46,6 @@ func _ready() -> void:
 #func _input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
-	# apply gravity
-	# faster acceleration at start of fall with upper limit
 	apply_gravity()
 
 	if current_stamina < max_stamina && !is_exhausted:
@@ -51,7 +54,10 @@ func _physics_process(delta: float) -> void:
 		current_stamina = max_stamina
 	
 	if $DashTimer.time_left > 0:
-		$AnimatedSprite.play("Dash")
+		$ParticlesDash.emitting = true
+		$ParticlesDash.rotation = AutoLoad.get_right_stick_input_vector2().angle()
+	else:
+		$ParticlesDash.emitting = false
 	
 	
 	if (right_stick_input()
@@ -60,41 +66,43 @@ func _physics_process(delta: float) -> void:
 		#Input.is_action_just_pressed("dash_debug"))):
 			$GunRotating.visible = false
 			var input_vector = Vector2.ZERO
-			input_vector.x = Input.get_action_strength("right_stick_right") - Input.get_action_strength("right_stick_left")
-			input_vector.y = Input.get_action_strength("right_stick_down") - Input.get_action_strength("right_stick_up")
+			#input_vector.x = Input.get_action_strength("right_stick_right") - Input.get_action_strength("right_stick_left")
+			#input_vector.y = Input.get_action_strength("right_stick_down") - Input.get_action_strength("right_stick_up")
+			input_vector.x = Input.get_joy_axis(0, JOY_AXIS_2)
+			input_vector.y = Input.get_joy_axis(0 ,JOY_AXIS_3)
 			input_vector = input_vector.normalized()
 			AutoLoad.right_stick_input_vector2 = input_vector
 			dash()
 	elif (is_aiming()):
 		$GunRotating.visible = false
 		var input_vector = Vector2.ZERO
-		input_vector.x = Input.get_action_strength("right_stick_right") - Input.get_action_strength("right_stick_left")
-		input_vector.y = Input.get_action_strength("right_stick_down") - Input.get_action_strength("right_stick_up")
+		#input_vector.x = Input.get_action_strength("right_stick_right") - Input.get_action_strength("right_stick_left")
+		#input_vector.y = Input.get_action_strength("right_stick_down") - Input.get_action_strength("right_stick_up")
+		input_vector.x = Input.get_joy_axis(0, JOY_AXIS_2)
+		input_vector.y = Input.get_joy_axis(0 ,JOY_AXIS_3)
 		input_vector = input_vector.normalized()
 		AutoLoad.right_stick_input_vector2 = input_vector
 	elif Input.is_action_pressed("move_left"):
+		if !is_attacking:
+			$AnimatedSprite.play("Run")
 		$GunRotating.visible = false
 		#$Gun.flip_h = true
 		# + 55 is cosmetic offset
 		#$Gun.position = Vector2(-gun_position_x + 55, gun_position_y)
 		$GunRotating.position = Vector2(-gun_position_x * AutoLoad.right_stick_input_vector2.x, gun_position_y)
 		$AnimatedSprite.flip_h = true
-		$AnimatedSprite.play("Run")
-		motion.x = -walk_speed
+		motion.x = (-walk_speed / 2) if is_attacking else -walk_speed
 		flip_idle = true
 	elif Input.is_action_pressed("move_right"):
+		if !is_attacking:
+			$AnimatedSprite.play("Run")
 		$GunRotating.visible = false
 		#$Gun.flip_h = false
 		#$Gun.position = Vector2(gun_position_x, gun_position_y)
 		$GunRotating.position = Vector2(gun_position_x, gun_position_y)
 		$AnimatedSprite.flip_h = false
-		$AnimatedSprite.play("Run")
-		motion.x = walk_speed
+		motion.x = (walk_speed / 2) if is_attacking else walk_speed
 		flip_idle = false
-	#elif Input.is_action_pressed("a_button") && is_on_floor():
-	#	$GunRotating.visible = false
-	#	motion.y = -jump_impulse
-	#	motion = move_and_slide(motion, Vector2.UP)
 	else:
 		$GunRotating.visible = false
 		motion.x = 0
@@ -103,9 +111,10 @@ func _physics_process(delta: float) -> void:
 		else:
 			$GunRotating.visible = false
 			$AnimatedSprite.flip_h = false
-		$AnimatedSprite.play("Idle")
-	if motion.x > (walk_speed * dash_range_factor) / 2:
-		$AnimatedSprite.play("dash")
+		if !is_attacking:
+			$AnimatedSprite.play("Idle")
+	#if motion.x > (walk_speed * dash_range_factor) / 2:
+		#$AnimatedSprite.play("dash")
 	
 	if Input.is_action_pressed("left_trigger") && !(current_stamina < aim_cost_per_frame) && !is_exhausted:
 		# && !is_on_floor() aming always takes stamina? -> playtest
@@ -132,8 +141,11 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("a_button") && is_on_floor():
 		motion.y = -jump_impulse
 	
+	melee_if_input()
+	
 	motion = move_and_slide(motion, Vector2.UP)
 	
+	 
 	if is_on_floor():
 		$AnimatedSprite.rotation = 0
 	
@@ -149,9 +161,21 @@ func _physics_process(delta: float) -> void:
 	# works maybe??
 	#if !is_on_floor() && motion.y > 25:
 	#	$AnimationPlayer.play("rotate_up")
+	
+	if Input.is_action_pressed("move_right"):
+		get_node("AttackArea").set_scale(Vector2(1, 1))
+	elif Input.is_action_pressed("move_left"): 
+		get_node("AttackArea").set_scale(Vector2(-1, 1))
+
+
+func melee_if_input():
+	if Input.is_action_just_pressed("x_button"):
+		is_attacking = true
+		$AnimatedSprite.play("Attack")
+		$AttackArea/CollisionShape2D.disabled = false
+		# implement slowed movement while attacking
 
 func _process(delta: float) -> void:
-	
 	# https://godotengine.org/qa/62408/make-the-camera-look-at-an-object
 	if Input.is_action_pressed("left_trigger"):
 		#$Camera2D.offset = AutoLoad.right_stick_input_vector2 * 200
@@ -167,6 +191,7 @@ func _process(delta: float) -> void:
 	
 
 func dash() -> void:
+	is_attacking = false
 	if current_stamina < dash_cost:
 		make_exhausted()
 	else:
@@ -176,17 +201,6 @@ func dash() -> void:
 		$DashTimer.start()
 		#motion *= dash_range_factor
 		$AnimatedSprite.play("Dash")
-	
-		# will be obsolete bc dash will be one swoosh effect
-		#if motion.x > 0:
-		#	$AnimatedSprite.flip_h = false
-		#else:
-		#	$AnimatedSprite.flip_h = true
-	
-		# rotate the dash anim to the direction of the dash
-		$AnimatedSprite.rotation = move.angle()
-	
-		#var move = input_vector * dash_range_factor
 		
 		# boosts the dash if it is less than 90 degrees apart from itself, mirrored on a Vector2.UP
 		# or is just straight up and can't be mirrored I think?
@@ -209,6 +223,7 @@ func _on_DashTimer_timeout() -> void:
 
 func make_exhausted() -> void:
 	is_exhausted = true
+	current_stamina = 0
 	if !$IsExhaustedTimer.time_left > 0:
 		$IsExhaustedTimer.start()
 
@@ -234,6 +249,7 @@ func is_aiming() -> bool:
 
 
 func apply_gravity() -> void:
+	# faster acceleration at start of fall with upper limit
 	if motion.y < 100:
 		motion.y += gravity * 5
 	elif motion.y < 250:
@@ -269,3 +285,14 @@ func update_debug_ui() -> void:
 	$DebugUI.get_node("LabelMuzzlePosition").text = "AutoLoad.muzzle_position: %s" % AutoLoad.muzzle_position
 	
 	$DebugUI/LabelMotion.text = "Motion: %s" % motion
+
+
+func _on_AnimatedSprite_animation_finished() -> void:
+	if $AnimatedSprite.animation == "Attack":
+		$AttackArea/CollisionShape2D.disabled = true
+		is_attacking = false
+
+
+func _on_AttackArea_body_entered(body: Node) -> void:
+	if body.get_collision_layer_bit(2):
+		body.hit_points -= attack_damage

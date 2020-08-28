@@ -14,8 +14,8 @@ gradient = SubResource( 1 )
 flag_disable_z = true
 direction = Vector3( 0, 0, 0 )
 spread = 0.0
-gravity = Vector3( -150, 0, 0 )
-initial_velocity = -250.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = -100.0
 orbit_velocity = 0.0
 orbit_velocity_random = 0.0
 scale = 2.0
@@ -39,7 +39,7 @@ position = Vector2( -566.871, 0.264332 )
 scale = Vector2( 61.7247, 0.473171 )
 
 [node name="Particles2D" type="Particles2D" parent="."]
-amount = 50
+amount = 100
 process_material = SubResource( 3 )
 [connection signal="body_entered" from="." to="." method="_on_Bullet_body_entered"]
 [connection signal="screen_exited" from="VisibilityNotifier2D" to="." method="_on_VisibilityNotifier2D_screen_exited"]

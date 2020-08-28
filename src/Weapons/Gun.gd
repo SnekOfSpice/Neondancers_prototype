@@ -1,7 +1,7 @@
 extends Sprite
 
 const BULLET_SCENE = preload("res://src/Weapons/Bullet.tscn")
-export var magazine_size = 20
+export var magazine_size = 25
 var current_magazine setget set_current_magazine, get_current_magazine
 var is_reloading = false setget set_is_reloading, get_is_reloading
 

@@ -1,10 +1,13 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://assets/Sprites/Enemies/enemy_1.png" type="Texture" id=1]
 [ext_resource path="res://src/Actors/Enemy.gd" type="Script" id=2]
 
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 304, 200 )
+
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 40, 80 )
 
 [node name="Enemy" type="KinematicBody2D"]
 scale = Vector2( 0.2, 0.2 )
@@ -32,4 +35,43 @@ margin_bottom = -226.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="EdgeDetectorRight" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EdgeDetectorRight"]
+position = Vector2( 400, 280 )
+shape = SubResource( 2 )
+
+[node name="EdgeDetectorLeft" type="Area2D" parent="."]
+position = Vector2( -800, 0 )
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EdgeDetectorLeft"]
+position = Vector2( 400, 280 )
+shape = SubResource( 2 )
+
+[node name="WallDetectorRight" type="Area2D" parent="."]
+position = Vector2( 120, -280 )
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallDetectorRight"]
+position = Vector2( 400, 280 )
+shape = SubResource( 2 )
+
+[node name="WallDetectorLeft" type="Area2D" parent="."]
+position = Vector2( -920, -280 )
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallDetectorLeft"]
+position = Vector2( 400, 280 )
+shape = SubResource( 2 )
 [connection signal="timeout" from="TimerSwitchDirection" to="." method="_on_TimerSwitchDirection_timeout"]
+[connection signal="body_exited" from="EdgeDetectorRight" to="." method="_on_EdgeDetectorRight_body_exited"]
+[connection signal="body_exited" from="EdgeDetectorLeft" to="." method="_on_EdgeDetectorLeft_body_exited"]
+[connection signal="body_entered" from="WallDetectorRight" to="." method="_on_WallDetectorRight_body_entered"]
+[connection signal="body_entered" from="WallDetectorLeft" to="." method="_on_WallDetectorLeft_body_entered"]

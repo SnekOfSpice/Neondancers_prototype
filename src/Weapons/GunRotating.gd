@@ -21,15 +21,15 @@ func _process(delta: float) -> void:
 			reload()
 	
 	# rotation & orientation
-	var angle = AutoLoad.get_right_stick_input_vector2().angle()
+	var angle = AutoLoad.right_stick_input_vector2.angle()
 	self.rotation = angle
 	if angle < 270 && angle > 90:
 		flip_h = true
 	else:
 		flip_h = false
 	var point = Vector2(get_parent().get_node("Position2DGunOrigin").position)
-	position = point + Vector2(cos(angle), sin(angle)) * (-100 if (angle < 90 && angle > 270) else 100)
-	position = point + (position - point).rotated(angle)
+	position = point + Vector2(cos(angle), sin(angle)) * 100#(-100 if (angle < 90 && angle > 270) else 100)
+	#position = point + (position - point).rotated(angle)
 	# https://godotengine.org/qa/50695/rotate-object-around-origin
 	AutoLoad.set_muzzle_position($Position2DMuzzle.global_position)
 	look_at($Position2DMuzzle.global_position)
